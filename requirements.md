@@ -202,7 +202,7 @@ The project MUST:
 - Include:
   - README.md
   - requirements.md
-  - CONTRIBUTING.md (future)
+  - CONTRIBUTING.md
 - Accept community contributions via pull requests
 
 ---
@@ -240,4 +240,3 @@ Potential future enhancements (non-binding):
 
 This requirements document reflects the scope for **Reqster v0.x**.
 Breaking requirement changes MUST be documented and versioned.
-``
