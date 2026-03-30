@@ -35,11 +35,19 @@ You do not need prior experience with Tauri or Rust to contribute.
 
 ---
 
+## Tech Stack
+
+- **Frontend:** React + TypeScript, bundled with Vite
+- **Backend:** Rust via Tauri
+- **Desktop shell:** Tauri v2
+
+---
+
 ## Project Structure (Overview)
 
 reqster/
 - src-tauri/   # Tauri backend (Rust)
-- src/         # Frontend UI (Web)
+- src/         # Frontend UI (React + TypeScript)
 - README.md
 - requirements.md
 - CONTRIBUTING.md
@@ -72,6 +80,25 @@ Before getting started, make sure you have:
 4. Run Reqster in development mode
 
    npm run tauri dev
+
+---
+
+## Running Tests and Linting
+
+Before submitting a PR, make sure everything passes locally.
+
+**Frontend (TypeScript / React):**
+
+   npm run lint        # ESLint
+   npm run typecheck   # TypeScript type check
+   npm run test        # Vitest unit tests
+
+**Backend (Rust):**
+
+   cd src-tauri
+   cargo fmt --check   # Format check
+   cargo clippy        # Lint
+   cargo test          # Unit tests
 
 ---
 
