@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reqster — Open-Source Desktop API Client</title>
+  <link rel="icon" type="image/png" href="assets/icon.png" />
+  <style>
+    /* ── Reset & Variables ────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-code: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --text-heading: #f1f5f9;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --border: #334155;
+      --method-get: #22c55e;
+      --method-post: #f97316;
+      --method-put: #a855f7;
+      --method-patch: #06b6d4;
+      --method-delete: #ef4444;
+      --success: #22c55e;
+      --warning: #eab308;
+      --error: #ef4444;
+      --radius: 8px;
+      --max-width: 960px;
+      --header-h: 64px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    img { max-width: 100%; height: auto; }
+    pre, code { font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace; }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .wrapper { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      height: var(--header-h);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    header .wrapper {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 100%;
+    }
+    header .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.25rem; font-weight: 700; color: var(--text-heading);
+    }
+    header .logo img { width: 32px; height: 32px; border-radius: 6px; }
+    header nav { display: flex; gap: 20px; align-items: center; }
+    header nav a { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); transition: color 0.15s; }
+    header nav a:hover { color: var(--text-heading); text-decoration: none; }
+    .header-gh { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 3rem; font-weight: 800;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: 1.2rem; color: var(--text-muted);
+      max-width: 640px; margin: 0 auto 32px;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: var(--radius);
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; border: none;
+    }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-hover); text-decoration: none; color: #fff; }
+    .btn-outline {
+      background: transparent; color: var(--text); border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+    /* ── Sections ─────────────────────────────────────────────── */
+    section { padding: 48px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-title {
+      font-size: 1.75rem; font-weight: 700; color: var(--text-heading);
+      margin-bottom: 24px;
+    }
+    .section-subtitle {
+      font-size: 1.1rem; color: var(--text-muted); margin-bottom: 32px;
+    }
+
+    /* ── Feature Grid ─────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      transition: border-color 0.15s;
+    }
+    .feature-card:hover { border-color: var(--accent); }
+    .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; color: var(--text-heading); }
+    .feature-card p  { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Tech Stack ───────────────────────────────────────────── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .tech-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .tech-item .badge {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 4px;
+      background: var(--accent); color: #fff;
+      flex-shrink: 0;
+    }
+    .tech-item .badge.frontend { background: #06b6d4; }
+    .tech-item .badge.backend  { background: #f97316; }
+    .tech-item .badge.desktop  { background: #8b5cf6; }
+    .tech-item span { font-weight: 500; }
+
+    /* ── Content Blocks ───────────────────────────────────────── */
+    .content-block { margin-bottom: 32px; }
+    .content-block h3 {
+      font-size: 1.2rem; font-weight: 600; color: var(--text-heading);
+      margin-bottom: 12px;
+    }
+    .content-block h4 {
+      font-size: 1rem; font-weight: 600; color: var(--text-heading);
+      margin: 20px 0 8px;
+    }
+    .content-block p, .content-block li { color: var(--text-muted); margin-bottom: 8px; }
+    .content-block ul, .content-block ol { padding-left: 20px; margin-bottom: 12px; }
+    .content-block ul li { list-style: disc; }
+    .content-block ol li { list-style: decimal; }
+
+    /* ── Code Blocks ──────────────────────────────────────────── */
+    .code-block {
+      background: var(--bg-code); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 20px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .code-block .comment { color: #64748b; }
+    .code-block .keyword { color: #c084fc; }
+    .code-block .string  { color: #22d3ee; }
+    .code-block .type    { color: #fbbf24; }
+    .code-block .func    { color: #60a5fa; }
+    .code-block .number  { color: #f472b6; }
+    .code-block .tag     { color: #f87171; }
+    .code-block .attr    { color: #fbbf24; }
+    .code-block .value   { color: #22d3ee; }
+    code.inline {
+      background: var(--bg-code); padding: 2px 6px; border-radius: 4px;
+      font-size: 0.85rem; color: #f1f5f9;
+    }
+
+    /* ── Tables ───────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin-bottom: 16px; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left; padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { font-weight: 600; color: var(--text-heading); background: var(--bg-card); }
+    td { color: var(--text-muted); }
+
+    /* ── Method Badges ────────────────────────────────────────── */
+    .method {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 700; color: #fff;
+    }
+    .method.get    { background: var(--method-get); }
+    .method.post   { background: var(--method-post); }
+    .method.put    { background: var(--method-put); }
+    .method.patch  { background: var(--method-patch); }
+    .method.delete { background: var(--method-delete); }
+
+    /* ── Status Badges ────────────────────────────────────────── */
+    .status-badge {
+      display: inline-block; padding: 2px 10px; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 700; color: #fff;
+    }
+    .status-success { background: var(--success); }
+    .status-warning { background: var(--warning); color: #1a1a1a; }
+    .status-error   { background: var(--error); }
+
+    /* ── Roadmap ──────────────────────────────────────────────── */
+    .phase {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .phase h4 { margin-bottom: 8px; }
+    .phase .pct {
+      display: inline-block; margin-left: 12px;
+      font-size: 0.8rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px;
+      background: var(--accent); color: #fff;
+    }
+    .phase ul { padding-left: 20px; }
+    .phase li { color: var(--text-muted); margin-bottom: 4px; font-size: 0.9rem; }
+    .phase li.done { list-style: none; margin-left: -20px; }
+    .phase li.done::before { content: "✅ "; }
+
+    /* ── Component Tree ───────────────────────────────────────── */
+    .tree {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.85rem; line-height: 1.8;
+      padding: 16px 20px; background: var(--bg-code); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow-x: auto;
+    }
+    .tree .node { color: #f1f5f9; }
+    .tree .leaf { color: var(--text-muted); }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0; text-align: center;
+      color: var(--text-muted); font-size: 0.9rem;
+    }
+    footer a { color: var(--accent); }
+
+    /* ── TOC Sidebar (desktop) ────────────────────────────────── */
+    .page-layout { display: flex; gap: 40px; }
+    .page-content { flex: 1; min-width: 0; }
+    .toc-sidebar {
+      display: none;
+      width: 220px; flex-shrink: 0;
+      position: sticky; top: calc(var(--header-h) + 24px);
+      align-self: flex-start; max-height: calc(100vh - var(--header-h) - 48px);
+      overflow-y: auto;
+    }
+    .toc-sidebar nav { display: flex; flex-direction: column; gap: 4px; }
+    .toc-sidebar a {
+      font-size: 0.85rem; color: var(--text-muted); padding: 4px 8px;
+      border-radius: 4px; transition: all 0.1s;
+    }
+    .toc-sidebar a:hover { background: var(--bg-card); color: var(--text-heading); text-decoration: none; }
+    @media (min-width: 1200px) {
+      .toc-sidebar { display: block; }
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .hero p { font-size: 1rem; }
+      header nav a { font-size: 0.8rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      header .wrapper { padding: 0 16px; }
+      .wrapper { padding: 0 16px; }
+      section { padding: 32px 0; }
+      .btn { width: 100%; justify-content: center; }
+    }
+
+    /* ── Misc ─────────────────────────────────────────────────── */
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .tag-must    { background: #ef4444; color: #fff; }
+    .tag-should  { background: #f97316; color: #fff; }
+    .tag-optional { background: #64748b; color: #fff; }
+    .glossary dt { font-weight: 600; color: var(--text-heading); margin-top: 12px; }
+    .glossary dd { color: var(--text-muted); margin-left: 0; margin-bottom: 4px; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════ HEADER ════════════════════════ -->
+<header>
+  <div class="wrapper">
+    <a href="#" class="logo" style="text-decoration:none">
+      <img src="assets/icon.png" alt="Reqster icon" />
+      <span>Reqster</span>
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#tech">Tech</a>
+      <a href="#getting-started">Getting Started</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#contributing">Contributing</a>
+      <a href="https://github.com/nandarimansyah/reqster" class="header-gh" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrapper page-layout">
+
+  <!-- ════════════════════ SIDEBAR TOC ════════════════════ -->
+  <aside class="toc-sidebar">
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#features">Features</a>
+      <a href="#tech">Tech Stack</a>
+      <a href="#getting-started">Getting Started</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#component-tree">Component Tree</a>
+      <a href="#data-flow">Data Flow</a>
+      <a href="#data-model">Data Model</a>
+      <a href="#state-management">State Management</a>
+      <a href="#backend">Backend (Rust)</a>
+      <a href="#ipc">IPC Communication</a>
+      <a href="#theming">Theming</a>
+      <a href="#storage">Storage Schema</a>
+      <a href="#security">Security</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#contributing">Contributing</a>
+      <a href="#license">License</a>
+    </nav>
+  </aside>
+
+  <!-- ════════════════════ MAIN CONTENT ════════════════════ -->
+  <main class="page-content">
+
+    <!-- ─── HERO ─────────────────────────────────────────── -->
+    <section class="hero" id="overview">
+      <h1>Reqster</h1>
+      <p>
+        An open-source, cross-platform desktop API client for testing,
+        debugging, and exploring HTTP/REST APIs. Built with Tauri for a
+        fast, lightweight, local-first experience — no accounts, no cloud sync.
+      </p>
+      <div class="hero-actions">
+        <a href="#getting-started" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Get Started
+        </a>
+        <a href="https://github.com/nandarimansyah/reqster" class="btn btn-outline" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          View on GitHub
+        </a>
+      </div>
+      <p style="margin-top: 32px; font-size: 0.9rem; color: var(--text-muted);">
+        <span class="status-badge status-success">v0.1.0</span>
+        &nbsp; MIT Licensed &nbsp;·&nbsp; Windows / macOS / Linux
+      </p>
+    </section>
+
+    <!-- ─── FEATURES ─────────────────────────────────────── -->
+    <section id="features">
+      <h2 class="section-title">Features</h2>
+      <p class="section-subtitle">Everything you need for day-to-day API testing.</p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>
+            <span class="method get">GET</span>
+            <span class="method post">POST</span>
+            <span class="method put">PUT</span>
+            <span class="method patch">PATCH</span>
+            <span class="method delete">DEL</span>
+          </h3>
+          <p>Send HTTP requests with all major methods. URL bar with method selector and Enter-to-send.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🔧 Query Params &amp; Headers</h3>
+          <p>Key-value editors with enable/disable toggles per row. Used for both query parameters and headers.</p>
+        </div>
+        <div class="feature-card">
+          <h3>📦 Request Body</h3>
+          <p>JSON, plain text, form-urlencoded, and multipart form-data. Auto-detected Content-Type.</p>
+        </div>
+        <div class="feature-card">
+          <h3>📄 Response Viewer</h3>
+          <p>Pretty-printed JSON, raw text view, status badge with colour coding, response time, and size.</p>
+        </div>
+        <div class="feature-card">
+          <h3>📁 Collections</h3>
+          <p>Organise requests into collections and folders. Full CRUD with inline rename, duplicate, and reorder.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🌱 Environment Variables</h3>
+          <p><code class="inline">{{variable}}</code> substitution in URL, headers, and body. Multiple environments (Local, Staging, Prod).</p>
+        </div>
+        <div class="feature-card">
+          <h3>🔐 Authentication</h3>
+          <p>API Key (header or query), Bearer Token, and Basic Auth. OAuth 2.0 planned post-v1.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🌙 Light &amp; Dark Mode</h3>
+          <p>CSS-variable-based theming with a toggle in the header. All colours reference CSS custom properties.</p>
+        </div>
+        <div class="feature-card">
+          <h3>⚡ Local-First</h3>
+          <p>Fully offline. No accounts, no telemetry, no cloud sync. All data stored locally via SQLite.</p>
+        </div>
+        <div class="feature-card">
+          <h3>🚀 Fast &amp; Lightweight</h3>
+          <p>Built with Tauri (Rust + webview). Significantly lower memory footprint than Electron-based tools.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── TECH STACK ───────────────────────────────────── -->
+    <section id="tech">
+      <h2 class="section-title">Tech Stack</h2>
+      <p class="section-subtitle">Modern tools from frontend to backend.</p>
+      <div class="tech-grid">
+        <div class="tech-item">
+          <span class="badge frontend">FE</span>
+          <span>React 18</span>
+        </div>
+        <div class="tech-item">
+          <span class="badge frontend">FE</span>
+          <span>TypeScript</span>
+        </div>
+        <div class="tech-item">
+          <span class="badge frontend">FE</span>
+          <span>Vite 5</span>
+        </div>
+        <div class="tech-item">
+          <span class="badge backend">BE</span>
+          <span>Rust (edition 2021)</span>
+        </div>
+        <div class="tech-item">
+          <span class="badge backend">BE</span>
+          <span>reqwest 0.12</span>
+        </div>
+        <div class="tech-item">
+          <span class="badge desktop">🖥</span>
+          <span>Tauri v2</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── GETTING STARTED ──────────────────────────────── -->
+    <section id="getting-started">
+      <h2 class="section-title">Getting Started</h2>
+
+      <div class="content-block">
+        <h3>Prerequisites</h3>
+        <ul>
+          <li><a href="https://nodejs.org/" target="_blank" rel="noopener">Node.js</a> (LTS recommended)</li>
+          <li><a href="https://www.rust-lang.org/tools/install" target="_blank" rel="noopener">Rust toolchain</a> (stable)</li>
+          <li><a href="https://tauri.app/start/prerequisites/" target="_blank" rel="noopener">Tauri prerequisites</a> for your OS</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>Install &amp; Run</h3>
+        <div class="code-block">
+          <span class="comment"># Clone the repository</span><br/>
+          git clone https://github.com/nandarimansyah/reqster.git<br/>
+          cd reqster<br/><br/>
+          <span class="comment"># Install dependencies</span><br/>
+          npm install<br/><br/>
+          <span class="comment"># Start in development mode (Vite + Tauri)</span><br/>
+          npm run tauri dev
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Build for Production</h3>
+        <div class="code-block">
+          npm run tauri build
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Available Scripts</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Script</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">npm run dev</code></td><td>Vite dev server (standalone, no Tauri)</td></tr>
+              <tr><td><code class="inline">npm run build</code></td><td>TypeScript check + Vite build</td></tr>
+              <tr><td><code class="inline">npm run preview</code></td><td>Vite preview server</td></tr>
+              <tr><td><code class="inline">npm run tauri dev</code></td><td>Start dev server + Tauri window</td></tr>
+              <tr><td><code class="inline">npm run tauri build</code></td><td>Production build</td></tr>
+              <tr><td><code class="inline">npm run lint</code></td><td>ESLint on <code class="inline">src/</code></td></tr>
+              <tr><td><code class="inline">npm run typecheck</code></td><td><code class="inline">tsc --noEmit</code></td></tr>
+              <tr><td><code class="inline">npm run test</code></td><td>Vitest unit tests</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ARCHITECTURE ─────────────────────────────────── -->
+    <section id="architecture">
+      <h2 class="section-title">Architecture</h2>
+      <p class="section-subtitle">
+        A Tauri-based architecture: React frontend in a webview communicating
+        with a Rust backend via IPC.
+      </p>
+
+      <div class="content-block">
+        <h3>Directory Structure</h3>
+        <div class="code-block">
+          reqster/<br/>
+          ├── <span class="keyword">ARCHITECTURE.md</span>      <span class="comment"># This document</span><br/>
+          ├── <span class="keyword">plan.md</span>                  <span class="comment"># Requirements &amp; development roadmap</span><br/>
+          ├── <span class="keyword">CONTRIBUTING.md</span>          <span class="comment"># Contributor guide</span><br/>
+          ├── <span class="keyword">README.md</span>                <span class="comment"># Project overview, getting started</span><br/>
+          ├── <span class="keyword">package.json</span>             <span class="comment"># Node dependencies &amp; scripts</span><br/>
+          ├── <span class="keyword">tsconfig.json</span>            <span class="comment"># TypeScript configuration</span><br/>
+          ├── <span class="keyword">vite.config.ts</span>           <span class="comment"># Vite / Tauri dev server config</span><br/>
+          ├── <span class="keyword">index.html</span>               <span class="comment"># Vite entry HTML</span><br/>
+          │<br/>
+          ├── <span class="keyword">src/</span>                     <span class="comment"># ── Frontend (React + TypeScript) ──</span><br/>
+          │   ├── main.tsx             <span class="comment"># React DOM entry point</span><br/>
+          │   ├── App.tsx              <span class="comment"># Root component, layout, global state</span><br/>
+          │   ├── index.css            <span class="comment"># All styles (CSS variables, layouts)</span><br/>
+          │   ├── types/index.ts       <span class="comment"># TypeScript interfaces &amp; types</span><br/>
+          │   ├── components/<br/>
+          │   │   ├── Sidebar.tsx      <span class="comment"># Collections / requests tree</span><br/>
+          │   │   ├── RequestPanel.tsx <span class="comment"># URL bar, method, tabs</span><br/>
+          │   │   └── ResponsePanel.tsx<span class="comment"># Status bar, body/headers views</span><br/>
+          │   └── hooks/<br/>
+          │       └── useRequest.ts    <span class="comment"># Invoke send_request, manage state</span><br/>
+          │<br/>
+          └── <span class="keyword">src-tauri/</span>                 <span class="comment"># ── Backend (Rust) ──</span><br/>
+              ├── Cargo.toml           <span class="comment"># Rust dependencies</span><br/>
+              ├── build.rs             <span class="comment"># Tauri build script</span><br/>
+              ├── tauri.conf.json      <span class="comment"># Window config, app metadata</span><br/>
+              ├── capabilities/<br/>
+              │   └── default.json     <span class="comment"># Tauri v2 capability permissions</span><br/>
+              ├── icons/<br/>
+              │   └── icon.png         <span class="comment"># App icon</span><br/>
+              └── src/<br/>
+                  ├── main.rs          <span class="comment"># Windows subsystem entry point</span><br/>
+                  ├── lib.rs           <span class="comment"># Tauri app builder, command registration</span><br/>
+                  └── commands.rs      <span class="comment"># send_request command (HTTP via reqwest)</span><br/>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Technology Overview</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Technology</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr><td>Shell</td><td>Tauri v2</td><td>Window, native menus, dialogs</td></tr>
+              <tr><td>Frontend</td><td>React 18 + TypeScript + Vite 5</td><td>UI rendering, user interaction</td></tr>
+              <tr><td>Backend</td><td>Rust (edition 2021)</td><td>HTTP engine, storage, auth</td></tr>
+              <tr><td>HTTP Client</td><td>reqwest 0.12</td><td>Send HTTP requests</td></tr>
+              <tr><td>Bundler</td><td>Vite 5</td><td>Dev server, production build</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── COMPONENT TREE ───────────────────────────────── -->
+    <section id="component-tree">
+      <h2 class="section-title">Component Tree</h2>
+      <div class="tree">
+        <span class="node">&lt;App&gt;</span><br/>
+        &nbsp;&nbsp;├── header .app-header<br/>
+        &nbsp;&nbsp;│&nbsp;&nbsp; ├── logo ("Reqster")<br/>
+        &nbsp;&nbsp;│&nbsp;&nbsp; └── theme toggle button<br/>
+        &nbsp;&nbsp;│<br/>
+        &nbsp;&nbsp;└── div .app-body<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── <span class="node">&lt;Sidebar&gt;</span><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── sidebar header (title + "+" button)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; └── sidebar body<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── collection (repeated)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── collection name<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; └── request items (repeated)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── method badge (colored)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── request name<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── empty state (when no collections)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── main .main-area<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── divider / split<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── <span class="node">&lt;RequestPanel&gt;</span><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── URL bar (method select, URL input, Send button)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── tabs (params | headers | body | auth)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; └── tab content<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── params → &lt;KeyValueEditor&gt;<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── headers → &lt;KeyValueEditor&gt;<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── body → radio + &lt;textarea&gt;<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── auth → placeholder<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── <span class="node">&lt;ResponsePanel&gt;</span><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── status bar (status code, duration, size, copy)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── tabs (body | headers)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── tab content<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── body → &lt;pre&gt; (raw or pretty-printed JSON)<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── headers → &lt;table&gt;
+      </div>
+    </section>
+
+    <!-- ─── DATA FLOW ────────────────────────────────────── -->
+    <section id="data-flow">
+      <h2 class="section-title">Data Flow</h2>
+      <div class="content-block">
+        <p>When a user sends an HTTP request, the flow is:</p>
+        <div class="code-block">
+          User action → Component state update → Re-render<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; useRequest.sendRequest()<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp; invoke&lt;T&gt;("send_request", { method, url, headers, body })<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp; Tauri IPC bridge (JSON serialised)<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp; Rust commands::send_request()<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp; reqwest::Client sends HTTP<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp; HttpResponse returned to frontend<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▼<br/>
+          &nbsp;&nbsp;&nbsp; setResponse(data) → ResponsePanel re-renders
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── DATA MODEL ───────────────────────────────────── -->
+    <section id="data-model">
+      <h2 class="section-title">Data Model</h2>
+
+      <div class="content-block">
+        <h3>TypeScript Types</h3>
+        <div class="code-block">
+          <span class="keyword">type</span> HttpMethod = <span class="string">"GET"</span> | <span class="string">"POST"</span> | <span class="string">"PUT"</span> | <span class="string">"PATCH"</span> | <span class="string">"DELETE"</span> | <span class="string">"HEAD"</span> | <span class="string">"OPTIONS"</span>;<br/>
+          <span class="keyword">type</span> BodyType&nbsp; = <span class="string">"none"</span> | <span class="string">"json"</span> | <span class="string">"text"</span> | <span class="string">"form-urlencoded"</span> | <span class="string">"multipart"</span>;<br/><br/>
+          <span class="keyword">interface</span> <span class="type">KeyValuePair</span> {<br/>
+          &nbsp;&nbsp;id: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;key: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;value: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;enabled: <span class="type">boolean</span>;<br/>
+          }<br/><br/>
+          <span class="keyword">interface</span> <span class="type">RequestBody</span> {<br/>
+          &nbsp;&nbsp;type: <span class="type">BodyType</span>;<br/>
+          &nbsp;&nbsp;content: <span class="type">string</span>;<br/>
+          }<br/><br/>
+          <span class="keyword">interface</span> <span class="type">HttpRequest</span> {<br/>
+          &nbsp;&nbsp;id: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;name: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;method: <span class="type">HttpMethod</span>;<br/>
+          &nbsp;&nbsp;url: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;queryParams: <span class="type">KeyValuePair</span>[];<br/>
+          &nbsp;&nbsp;headers: <span class="type">KeyValuePair</span>[];<br/>
+          &nbsp;&nbsp;body: <span class="type">RequestBody</span>;<br/>
+          }<br/><br/>
+          <span class="keyword">interface</span> <span class="type">HttpResponseData</span> {<br/>
+          &nbsp;&nbsp;status: <span class="type">number</span>;<br/>
+          &nbsp;&nbsp;status_text: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;headers: { key: <span class="type">string</span>; value: <span class="type">string</span> }[];<br/>
+          &nbsp;&nbsp;body: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;duration_ms: <span class="type">number</span>;<br/>
+          &nbsp;&nbsp;size_bytes: <span class="type">number</span>;<br/>
+          }<br/><br/>
+          <span class="keyword">interface</span> <span class="type">Collection</span> {<br/>
+          &nbsp;&nbsp;id: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;name: <span class="type">string</span>;<br/>
+          &nbsp;&nbsp;requests: <span class="type">HttpRequest</span>[];<br/>
+          }
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Rust Structures (Backend)</h3>
+        <div class="code-block">
+          <span class="comment">// From the frontend</span><br/>
+          <span class="keyword">#[derive(Debug, Deserialize)]</span><br/>
+          <span class="keyword">pub struct</span> <span class="type">HttpHeader</span> {<br/>
+          &nbsp;&nbsp;pub key: <span class="type">String</span>,<br/>
+          &nbsp;&nbsp;pub value: <span class="type">String</span>,<br/>
+          }<br/><br/>
+          <span class="comment">// Returned to the frontend</span><br/>
+          <span class="keyword">#[derive(Debug, Serialize)]</span><br/>
+          <span class="keyword">pub struct</span> <span class="type">HttpResponse</span> {<br/>
+          &nbsp;&nbsp;pub status: <span class="type">u16</span>,<br/>
+          &nbsp;&nbsp;pub status_text: <span class="type">String</span>,<br/>
+          &nbsp;&nbsp;pub headers: <span class="type">Vec&lt;HttpHeader&gt;</span>,<br/>
+          &nbsp;&nbsp;pub body: <span class="type">String</span>,<br/>
+          &nbsp;&nbsp;pub duration_ms: <span class="type">u64</span>,<br/>
+          &nbsp;&nbsp;pub size_bytes: <span class="type">usize</span>,<br/>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── STATE MANAGEMENT ─────────────────────────────── -->
+    <section id="state-management">
+      <h2 class="section-title">State Management</h2>
+      <div class="content-block">
+        <p>
+          Currently no external state library. State is managed with React
+          <code class="inline">useState</code> and <code class="inline">useCallback</code>
+          (via hooks). The root <code class="inline">App</code> component owns all
+          canonical state and passes it down as props.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>State</th><th>Owner</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">collections</code></td><td>App</td><td><code class="inline">Collection[]</code></td></tr>
+              <tr><td><code class="inline">request</code> (active)</td><td>App</td><td><code class="inline">HttpRequest</code></td></tr>
+              <tr><td><code class="inline">response</code></td><td>useRequest</td><td><code class="inline">HttpResponseData | null</code></td></tr>
+              <tr><td><code class="inline">loading</code></td><td>useRequest</td><td><code class="inline">boolean</code></td></tr>
+              <tr><td><code class="inline">error</code></td><td>useRequest</td><td><code class="inline">string | null</code></td></tr>
+              <tr><td><code class="inline">theme</code></td><td>App</td><td><code class="inline">"light" | "dark"</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── BACKEND ──────────────────────────────────────── -->
+    <section id="backend">
+      <h2 class="section-title">Backend (Rust)</h2>
+
+      <div class="content-block">
+        <h3>Crate Structure</h3>
+        <div class="code-block">
+          src-tauri/src/<br/>
+          ├── <span class="keyword">main.rs</span>         <span class="comment">// #![windows_subsystem] entry — calls reqster_lib::run()</span><br/>
+          ├── <span class="keyword">lib.rs</span>          <span class="comment">// Tauri::Builder setup, registers commands</span><br/>
+          └── <span class="keyword">commands.rs</span>     <span class="comment">// Tauri command functions (send_request, etc.)</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Registered Commands</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">send_request</code></td><td>Builds an HTTP request via reqwest, sends it, and returns <code class="inline">HttpResponse</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Key Design Decisions</h3>
+        <ul>
+          <li><strong>Per-request reqwest::Client</strong> — simpler than managing a static client; pooling can be added later.</li>
+          <li><strong>Raw string body</strong> — Content-Type is user-set (or auto-inferred later).</li>
+          <li><strong>Eager response collection</strong> — bytes converted to <code class="inline">String</code> via <code class="inline">String::from_utf8_lossy</code>.</li>
+          <li><strong>Duration</strong> — measured with <code class="inline">std::time::Instant</code>.</li>
+          <li><strong>Error handling</strong> — all errors surfaced as <code class="inline">Result&lt;HttpResponse, String&gt;</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── IPC ──────────────────────────────────────────── -->
+    <section id="ipc">
+      <h2 class="section-title">IPC Communication</h2>
+      <div class="content-block">
+        <p>
+          The frontend sends commands to the backend via
+          <code class="inline">@tauri-apps/api/core</code> <code class="inline">invoke</code>:
+        </p>
+        <div class="code-block">
+          <span class="comment">// Frontend (useRequest.ts)</span><br/>
+          <span class="keyword">const</span> result = <span class="keyword">await</span> invoke&lt;<span class="type">HttpResponseData</span>&gt;(<span class="string">"send_request"</span>, {<br/>
+          &nbsp;&nbsp;method: request.method,<br/>
+          &nbsp;&nbsp;url,<br/>
+          &nbsp;&nbsp;headers: activeHeaders,<br/>
+          &nbsp;&nbsp;body, <span class="comment">// string | null</span><br/>
+          });
+        </div>
+        <p>The Rust side declares:</p>
+        <div class="code-block">
+          <span class="keyword">#[tauri::command]</span><br/>
+          <span class="keyword">pub async fn</span> <span class="func">send_request</span>(<br/>
+          &nbsp;&nbsp;method: <span class="type">String</span>,<br/>
+          &nbsp;&nbsp;url: <span class="type">String</span>,<br/>
+          &nbsp;&nbsp;headers: <span class="type">Vec&lt;HttpHeader&gt;</span>,<br/>
+          &nbsp;&nbsp;body: <span class="type">Option&lt;String&gt;</span>,<br/>
+          ) -> <span class="type">Result</span>&lt;<span class="type">HttpResponse</span>, <span class="type">String</span>&gt; { ... }
+        </div>
+        <p>
+          <strong>Key rules:</strong> Parameter names in the TS object must match Rust
+          function parameter names exactly. Return values are serialised to JSON by Tauri
+          and deserialised by the generic type parameter on the TS side.
+        </p>
+      </div>
+
+      <div class="content-block">
+        <h3>Capabilities (Tauri v2)</h3>
+        <p>Defined in <code class="inline">src-tauri/capabilities/default.json</code>:</p>
+        <div class="code-block">
+          {<br/>
+          &nbsp;&nbsp;<span class="attr">"identifier"</span>: <span class="value">"default"</span>,<br/>
+          &nbsp;&nbsp;<span class="attr">"windows"</span>: [<span class="value">"main"</span>],<br/>
+          &nbsp;&nbsp;<span class="attr">"permissions"</span>: [<span class="value">"core:default"</span>]<br/>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── THEMING ──────────────────────────────────────── -->
+    <section id="theming">
+      <h2 class="section-title">Theming</h2>
+      <div class="content-block">
+        <p>
+          Two themes are toggled by setting <code class="inline">data-theme="dark"</code>
+          on <code class="inline">&lt;html&gt;</code>. Every component references CSS
+          custom properties — no hardcoded colours in component code.
+        </p>
+        <div class="code-block">
+          <span class="tag">:root</span> {<br/>
+          &nbsp;&nbsp;--bg-primary: #ffffff;<br/>
+          &nbsp;&nbsp;--text-primary: #1a1a1a;<br/>
+          &nbsp;&nbsp;--accent: #2563eb;<br/>
+          &nbsp;&nbsp;<span class="comment">/* ... */</span><br/>
+          }<br/><br/>
+          <span class="tag">[data-theme="dark"]</span> {<br/>
+          &nbsp;&nbsp;--bg-primary: #1a1a1a;<br/>
+          &nbsp;&nbsp;--text-primary: #e5e7eb;<br/>
+          &nbsp;&nbsp;--accent: #3b82f6;<br/>
+          &nbsp;&nbsp;<span class="comment">/* ... */</span><br/>
+          }
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>HTTP Method &amp; Status Colours</h3>
+        <div class="code-block">
+          <span class="comment">/* Methods */</span><br/>
+          --method-get: #16a34a;  &nbsp;&nbsp; <span class="comment">/* green */</span><br/>
+          --method-post: #ea580c; &nbsp;&nbsp; <span class="comment">/* orange */</span><br/>
+          --method-put: #9333ea; &nbsp;&nbsp; <span class="comment">/* purple */</span><br/>
+          --method-patch: #0891b2; &nbsp; <span class="comment">/* cyan */</span><br/>
+          --method-delete: #dc2626; &nbsp; <span class="comment">/* red */</span><br/><br/>
+          <span class="comment">/* Status codes */</span><br/>
+          --status-success: #16a34a; &nbsp;&nbsp; <span class="comment">/* 2xx */</span><br/>
+          --status-redirect: #d97706; &nbsp; <span class="comment">/* 3xx */</span><br/>
+          --status-client-error: #dc2626; <span class="comment">/* 4xx */</span><br/>
+          --status-server-error: #9333ea; <span class="comment">/* 5xx */</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── STORAGE SCHEMA ──────────────────────────────── -->
+    <section id="storage">
+      <h2 class="section-title">Storage Schema</h2>
+      <div class="content-block">
+        <p>Planned SQLite persistence schema (Phase 0):</p>
+        <div class="code-block">
+          <span class="keyword">collections</span><br/>
+          ├── id          TEXT PK<br/>
+          ├── name        TEXT<br/>
+          └── sort_order  INT<br/><br/>
+          <span class="keyword">requests</span><br/>
+          ├── id            TEXT PK<br/>
+          ├── collection_id TEXT FK → collections.id<br/>
+          ├── name          TEXT<br/>
+          ├── method        TEXT<br/>
+          ├── url           TEXT<br/>
+          ├── body_type     TEXT<br/>
+          ├── body_content  TEXT<br/>
+          └── sort_order    INT<br/><br/>
+          <span class="keyword">request_params</span> &nbsp;&nbsp; <span class="comment">-- same shape for request_headers</span><br/>
+          ├── id         TEXT PK<br/>
+          ├── request_id TEXT FK → requests.id<br/>
+          ├── key        TEXT<br/>
+          ├── value      TEXT<br/>
+          ├── enabled    BOOL<br/>
+          └── sort_order INT<br/><br/>
+          <span class="keyword">environments</span><br/>
+          ├── id        TEXT PK<br/>
+          ├── name      TEXT<br/>
+          └── is_active BOOL<br/><br/>
+          <span class="keyword">environment_variables</span><br/>
+          ├── id     TEXT PK<br/>
+          ├── env_id TEXT FK → environments.id<br/>
+          ├── key    TEXT<br/>
+          └── value  TEXT
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── SECURITY ─────────────────────────────────────── -->
+    <section id="security">
+      <h2 class="section-title">Security Model</h2>
+      <div class="content-block">
+        <h3>Principles</h3>
+        <ol>
+          <li><strong>No data leaves the machine</strong> — all storage is local, no telemetry, no accounts.</li>
+          <li><strong>Sensitive values must not be logged</strong> — auth header values never reach <code class="inline">println!</code> or the <code class="inline">log</code> crate.</li>
+          <li><strong>CSP is set to <code class="inline">null</code></strong> (disabled) — acceptable for a developer tool that makes HTTP requests to arbitrary URLs.</li>
+          <li><strong>Tauri v2 capability model</strong> limits what each window can do.</li>
+        </ol>
+      </div>
+      <div class="content-block">
+        <h3>Threat Surface</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vector</th><th>Mitigation</th></tr></thead>
+            <tbody>
+              <tr><td>Malicious URL in request input</td><td>reqwest validates URLs; user is responsible for targets</td></tr>
+              <tr><td>XSS in response body preview</td><td>Response body rendered as text in <code class="inline">&lt;pre&gt;</code>, not innerHTML</td></tr>
+              <tr><td>SQL injection in storage</td><td>Parameterised queries (rusqlite) or safe plugin API</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ROADMAP ──────────────────────────────────────── -->
+    <section id="roadmap">
+      <h2 class="section-title">Roadmap</h2>
+      <p class="section-subtitle">Development is organised into phases. Here's the current status and what's planned.</p>
+
+      <div class="content-block">
+        <h3>Current Status (v0.1.0)</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Feature Area</th><th>Completion</th><th>Next Action</th></tr></thead>
+            <tbody>
+              <tr><td>HTTP Request Sending</td><td><span class="status-badge status-warning">~70%</span></td><td>Multipart body, auth injection</td></tr>
+              <tr><td>Response Display</td><td><span class="status-badge status-success">~88%</span></td><td>Save to file, raw/pretty toggle</td></tr>
+              <tr><td>Collections &amp; Storage</td><td><span class="status-badge status-error">0%</span></td><td><strong>Phase 0 — first priority</strong></td></tr>
+              <tr><td>Environments</td><td><span class="status-badge status-error">0%</span></td><td>Phase 2</td></tr>
+              <tr><td>Authentication</td><td><span class="status-badge status-error">0%</span></td><td>Phase 3</td></tr>
+              <tr><td>UI / Theme</td><td><span class="status-badge status-success">100%</span></td><td>Polish in Phase 5</td></tr>
+              <tr><td>Testing</td><td><span class="status-badge status-error">0%</span></td><td>Phase 5.4</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Implementation Phases</h3>
+
+        <div class="phase">
+          <h4>Phase 0 — Local Persistence (Foundation) <span class="pct">0%</span></h4>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:8px">Everything depends on storage. No data survives a restart today.</p>
+          <ul>
+            <li>Choose storage engine (rusqlite / tauri-plugin-sql / JSON)</li>
+            <li>Design SQLite schema</li>
+            <li>Rust CRUD commands for collections, requests, environments</li>
+            <li>Frontend persistence hooks (load on mount, auto-save)</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h4>Phase 1 — Collections CRUD <span class="pct">0%</span></h4>
+          <ul>
+            <li>Sidebar: New Collection, inline rename, delete with confirmation</li>
+            <li>Drag-and-drop reorder (or arrow buttons)</li>
+            <li>Context menu on request items: Rename, Duplicate, Delete, Move</li>
+            <li>Wire Save button / auto-save in RequestPanel</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h4>Phase 2 — Environment Variables <span class="pct">0%</span></h4>
+          <ul>
+            <li>Rust <code class="inline">resolve_variables()</code> for <code class="inline">{{variable}}</code> substitution</li>
+            <li>Environment switcher dropdown in header</li>
+            <li>"Manage Environments" dialog with key-value editor</li>
+            <li>Syntax highlight <code class="inline">{{variable}}</code> patterns in inputs</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h4>Phase 3 — Authentication <span class="pct">0%</span></h4>
+          <ul>
+            <li>Auth state model (<code class="inline">AuthConfig</code> type)</li>
+            <li>Auth tab UI with radio/forms for API Key, Bearer, Basic</li>
+            <li>Backend auth header injection</li>
+            <li>Sensitive value masking in UI and logs</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h4>Phase 4 — Body &amp; Response Enhancements <span class="pct">0%</span></h4>
+          <ul>
+            <li>Multipart form-data body</li>
+            <li>Save response to file (native dialog)</li>
+            <li>Raw / pretty JSON toggle, line numbers, collapsible tree</li>
+            <li>Search within response body</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h4>Phase 5 — Shortcuts, Polish &amp; DX <span class="pct">0%</span></h4>
+          <ul>
+            <li>Keyboard shortcuts (Cmd+Enter, Cmd+S, Cmd+N, etc.)</li>
+            <li>Resizable split pane, responsive sidebar collapse</li>
+            <li>Debounced auto-save, virtualised large responses</li>
+            <li>Request cancellation (AbortController + reqwest abort)</li>
+            <li>Vitest unit tests + Rust unit tests</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h4>Phase 6 — Future / Post-v1</h4>
+          <ul>
+            <li>Import / Export (Postman v2.1, Insomnia, cURL)</li>
+            <li>Request History ("Recent" sidebar section)</li>
+            <li>CLI Companion (<code class="inline">reqster run</code>)</li>
+            <li>Plugin system (wasm / Lua), pre/post hooks</li>
+            <li>GraphQL, WebSocket, gRPC protocols</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Dependency Graph</h3>
+        <div class="code-block">
+          Phase 0 (Storage)<br/>
+          &nbsp;&nbsp;└── Phase 1 (Collections CRUD)<br/>
+          &nbsp;&nbsp;└── Phase 2 (Environments)<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── Phase 3 (Auth) — can start in parallel with Phase 2<br/>
+          &nbsp;&nbsp;└── Phase 4 (Body &amp; Response)<br/>
+          &nbsp;&nbsp;└── Phase 5 (Polish) — can start after Phase 1<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── Phase 6 (Future)
+        </div>
+        <p style="font-size:0.9rem;color:var(--text-muted)">
+          Phases 2 and 3 can be developed in parallel. Phase 4 can start once Phase 0 is stable.
+        </p>
+      </div>
+
+      <div class="content-block">
+        <h3>Non-Goals (v0.x)</h3>
+        <p>The following are explicitly out of scope for initial versions:</p>
+        <ul>
+          <li>Team collaboration</li>
+          <li>Cloud sync</li>
+          <li>User accounts</li>
+          <li>Analytics or tracking</li>
+          <li>API mocking</li>
+          <li>Automated tests / collections runner</li>
+          <li>GraphQL client</li>
+          <li>WebSocket / gRPC client</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── CONTRIBUTING ─────────────────────────────────── -->
+    <section id="contributing">
+      <h2 class="section-title">Contributing</h2>
+      <p class="section-subtitle">
+        Contributions of all kinds are welcome — code, docs, design, bug reports,
+        and feature ideas.
+      </p>
+
+      <div class="content-block">
+        <h3>Code of Conduct</h3>
+        <ul>
+          <li>Be respectful and constructive</li>
+          <li>Assume good intent</li>
+          <li>Keep discussions professional and technical</li>
+          <li>Help create a welcoming community</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>Ways to Contribute</h3>
+        <ul>
+          <li>Reporting bugs</li>
+          <li>Suggesting new features or improvements</li>
+          <li>Improving documentation</li>
+          <li>Fixing bugs or implementing features</li>
+          <li>Enhancing UI/UX</li>
+          <li>Improving performance or security</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>Development Setup</h3>
+        <ol>
+          <li>Fork the <a href="https://github.com/nandarimansyah/reqster" target="_blank" rel="noopener">repository</a></li>
+          <li>Clone your fork</li>
+        </ol>
+        <div class="code-block">
+          git clone https://github.com/&lt;your-username&gt;/reqster.git<br/>
+          cd reqster
+        </div>
+        <ol start="3">
+          <li>Install dependencies</li>
+        </ol>
+        <div class="code-block">
+          npm install
+        </div>
+        <ol start="4">
+          <li>Run in development mode</li>
+        </ol>
+        <div class="code-block">
+          npm run tauri dev
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Branching Strategy</h3>
+        <ul>
+          <li><code class="inline">main</code> — stable branch</li>
+          <li><code class="inline">feature/&lt;name&gt;</code> — new features</li>
+          <li><code class="inline">fix/&lt;name&gt;</code> — bug fixes</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>Commit Message Guidelines</h3>
+        <div class="code-block">
+          type(scope): short summary<br/><br/>
+          <span class="comment"># Examples:</span><br/>
+          feat(http): add PATCH method support<br/>
+          fix(ui): prevent response overflow<br/>
+          docs: improve installation instructions
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Pull Request Guidelines</h3>
+        <ul>
+          <li>Ensure the application builds and runs</li>
+          <li>Keep changes focused and minimal</li>
+          <li>Follow existing code style</li>
+          <li>Update documentation if behavior changes</li>
+          <li>Include screenshots for UI changes</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>Running Tests and Linting</h3>
+        <p><strong>Frontend (TypeScript / React):</strong></p>
+        <div class="code-block">
+          npm run lint        <span class="comment"># ESLint</span><br/>
+          npm run typecheck   <span class="comment"># TypeScript type check</span><br/>
+          npm run test        <span class="comment"># Vitest unit tests</span>
+        </div>
+        <p><strong>Backend (Rust):</strong></p>
+        <div class="code-block">
+          cd src-tauri<br/>
+          cargo fmt --check   <span class="comment"># Format check</span><br/>
+          cargo clippy        <span class="comment"># Lint</span><br/>
+          cargo test          <span class="comment"># Unit tests</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h3>Code Style</h3>
+        <p><strong>Rust:</strong></p>
+        <ul>
+          <li>Prefer idiomatic Rust</li>
+          <li>Avoid unnecessary abstractions</li>
+          <li>Use async thoughtfully</li>
+        </ul>
+        <p><strong>Frontend:</strong></p>
+        <ul>
+          <li>Keep components small and focused</li>
+          <li>Avoid large monolithic components</li>
+          <li>Prefer explicit over clever</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h3>License</h3>
+        <p>
+          By contributing to Reqster, you agree that your contributions will be
+          licensed under the MIT License.
+        </p>
+      </div>
+    </section>
+
+    <!-- ─── LICENSE ──────────────────────────────────────── -->
+    <section id="license">
+      <h2 class="section-title">License</h2>
+      <div class="content-block">
+        <p>Reqster is open-source software released under the <strong>MIT License</strong>.</p>
+        <div class="code-block">
+MIT License<br/><br/>
+Copyright (c) 2026 Nanda Rimansyah<br/><br/>
+Permission is hereby granted, free of charge, to any person obtaining a copy<br/>
+of this software and associated documentation files (the "Software"), to deal<br/>
+in the Software without restriction, including without limitation the rights<br/>
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell<br/>
+copies of the Software, and to permit persons to whom the Software is<br/>
+furnished to do so, subject to the following conditions:<br/><br/>
+The above copyright notice and this permission notice shall be included in all<br/>
+copies or substantial portions of the Software.<br/><br/>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR<br/>
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,<br/>
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE<br/>
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER<br/>
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,<br/>
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE<br/>
+SOFTWARE.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<footer>
+  <div class="wrapper">
+    <p>
+      Built with ❤️ by <a href="https://github.com/nandarimansyah" target="_blank" rel="noopener">Nanda Rimansyah</a>
+      &nbsp;·&nbsp; <a href="https://github.com/nandarimansyah/reqster" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp; MIT License
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

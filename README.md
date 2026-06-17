@@ -6,6 +6,8 @@ lightweight, local-first experience — no accounts, no cloud sync.
 
 > A developer-friendly alternative to Postman and Insomnia.
 
+📖 **Full documentation:** [https://nandarimansyah.github.io/reqster](https://nandarimansyah.github.io/reqster)
+
 ---
 
 ## Features
@@ -66,7 +68,10 @@ npm run tauri build
 
 ## Documentation
 
+- 📖 [GitHub Pages site](https://nandarimansyah.github.io/reqster) — full documentation with architecture, roadmap, and more
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — detailed architecture documentation
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — how to contribute, dev setup, and code style
+- [plan.md](./plan.md) — development roadmap and feature specification
 
 ---
 
@@ -80,3 +85,7 @@ before opening a pull request.
 ## License
 
 MIT — see [LICENSE](./LICENSE)
+
+---
+
+*Built with ❤️ by [Nanda Rimansyah](https://github.com/nandarimansyah)*
