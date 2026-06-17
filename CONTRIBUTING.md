@@ -49,7 +49,7 @@ reqster/
 - src-tauri/   # Tauri backend (Rust)
 - src/         # Frontend UI (React + TypeScript)
 - README.md
-- requirements.md
+- plan.md
 - CONTRIBUTING.md
 
 ---
@@ -158,7 +158,7 @@ When reporting bugs, please include:
 Feature requests should:
 
 - Clearly describe the problem being solved
-- Align with the goals in requirements.md
+- Align with the goals in [plan.md](./plan.md)
 - Avoid scope creep (cloud sync, accounts, tracking are non-goals)
 
 Discussion before implementation is encouraged.

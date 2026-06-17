@@ -66,7 +66,6 @@ npm run tauri build
 
 ## Documentation
 
-- [requirements.md](./requirements.md) — full functional and non-functional requirements
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — how to contribute, dev setup, and code style
 
 ---
